@@ -256,17 +256,76 @@ begin
     exact ⟨ ↾f, ↾g ⟩,
 end
 
+universes v u
+
+-- this is ugly, why do I need to define this?
+abbreviation from_hom {α β : Type u} (f : α ⟶ β) : α → β := f
+
+lemma type_isos_are_injective {A B: Type u} (i: A ≅ B) :
+∀ (a1 a2 : A), a1 ≠ a2 → i.hom a1 ≠ i.hom a2 :=
+begin
+    intros a1 a2 ne h,
+    suffices H: a1 = a2,
+    {exact ne H},
+    { calc a1 = from_hom (𝟙 A) a1 : by {refl}
+        ... = (i.hom ≫ i.inv) a1 : by {rw i.hom_inv_id}
+        ... = i.inv (i.hom a1) : by {refl}
+        ... = i.inv (i.hom a2) : by {rw h,}
+        ... = (i.hom ≫ i.inv) a2 : by {simp}
+        ... = from_hom (𝟙 A) a2 : by {rw i.hom_inv_id}
+        ... = a2 : by {refl},
+    } 
+end
+
+lemma type_isos_are_surjective {A B: Type u} (i: A ≅ B) :
+∀ (b : B), ∃ (a : A), i.hom a = b :=
+begin
+    intros b,
+    use i.inv b,
+    calc i.hom (i.inv b) = (i.inv ≫ i.hom) b : by {simp}
+        ... = from_hom (𝟙 B) b : by {rw i.inv_hom_id}
+        ... = b : by {refl}
+end
+
+-- Exercise 11b page 55
 example :  (People11 ≅ bool) → false :=
 begin
     intros i,
-    let fatima_drink := i.hom People11.Fatima,
-    let omer_drink := i.hom People11.Omer,
-    let alysia_drink := i.hom People11.Alysia,
-    --have f : i.inv fatima_drink = People11.Fatima, {sorry}
-sorry
+    by_cases i.inv tt = i.inv ff,
+    {
+        -- when i.inv tt = i.inv ff
+        apply type_isos_are_injective (symm i) _ _ _ h,
+        simp,
+    },
+    {
+        -- when i.inv tt ≠ i.inv ff
+        have ugly : ∃ (p : People11), p ≠ i.inv tt ∧ p ≠ i.inv ff,
+        {   cases i.inv tt,
+            cases i.inv ff,
+            use People11.Alysia,
+            use People11.Alysia, simp,
+            use People11.Omer, simp,
+            cases i.inv ff,
+            use People11.Alysia, simp, simp,
+            use People11.Alysia,
+            use People11.Fatima, simp,
+            cases i.inv ff,
+            use People11.Omer, simp,
+            use People11.Fatima, simp,
+            use People11.Omer
+        },
+
+        cases ugly with u hu,
+        cases type_isos_are_surjective (symm i) u with a ha,
+        change i.inv a = u at ha,
+        cases a,
+        exact hu.2 ha.symm,
+        exact hu.1 ha.symm,
+    }
+
 end
+
 -------------------------------------------------------------------
---def has_retraction {A B : C} (f : A ⟶ B) := ∃ s, f ≫ s = 𝟙 A
 
 lemma isos_prop_1  (f : A ⟶ B ) (sec: ∃ s, s ≫ f = 𝟙 B): 
 ∀ (T : C) (y : T ⟶ B), ∃ (x : T ⟶ A), x ≫ f = y :=
