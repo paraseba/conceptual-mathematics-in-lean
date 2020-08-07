@@ -28,6 +28,7 @@ jobs:
 
     # Runs a set of commands using the runners shell
     - name: Build project
+      shell: bash -l {0}
       run: |
         ls -lhR /home/runner/.local/bin
         PATH=/home/runner/.local/bin:$PATH
