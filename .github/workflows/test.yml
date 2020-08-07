@@ -29,5 +29,6 @@ jobs:
     # Runs a set of commands using the runners shell
     - name: Build project
       run: |
-        leanproject build
-        
+        ls -lhR /home/runner/.local/bin
+        echo $PATH
+        /home/runner/.local/bin/leanproject build
