@@ -30,7 +30,4 @@ jobs:
     - name: Build project
       shell: bash -l {0}
       run: |
-        ls -lhR /home/runner/.local/bin
-        PATH=/home/runner/.local/bin:$PATH
-        echo $PATH
         /home/runner/.local/bin/leanproject build
