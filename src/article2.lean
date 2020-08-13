@@ -1,7 +1,7 @@
 import category_theory.category
 import category_theory.isomorphism
 import category_theory.types
-import data.real.basic
+import data.fintype.basic
 
 open category_theory
 
@@ -224,11 +224,13 @@ begin
     split, --why is this enough?
 end
 
+@[derive decidable_eq]
 inductive People11 : Type
 |Fatima : People11
 |Omer : People11
 |Alysia : People11
 
+@[derive decidable_eq]
 inductive Drinks11 : Type
 |Coffee : Drinks11
 |Tea : Drinks11
@@ -322,7 +324,26 @@ begin
         exact hu.2 ha.symm,
         exact hu.1 ha.symm,
     }
+end
 
+
+
+open fintype 
+
+instance people_fintype: fintype People11 := {
+    elems := [People11.Alysia, People11.Fatima, People11.Omer].to_finset,
+    complete := by { intro x, cases x; simp }
+} 
+
+-- Exercise 11b page 55
+example  : (People11 ≃ bool) → false :=
+begin
+suffices cards : card People11 ≠ card bool,
+{ intros h,
+  exact cards (card_congr h)
+},
+
+{ change 3 ≠ 2, finish,}
 end
 
 -------------------------------------------------------------------
