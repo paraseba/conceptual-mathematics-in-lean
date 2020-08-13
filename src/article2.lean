@@ -8,6 +8,12 @@ open category_theory
 variables  {C: Type} [category C]
 variables (A B D A' B' D' : C)
 
+-- Exercise 1 page 40
+example : is_iso(𝟙 A) := {inv := 𝟙 A}
+example (f : A ⟶ B) (g : B ⟶ A) (isof : is_iso f) (i : inv f = g) : is_iso g := {inv := f}
+example (f : A ⟶ B) (k : B ⟶ D) (isof : is_iso f) (isok : is_iso k) : is_iso (f ≫ k) := 
+{inv := inv k ≫ inv f}
+
 -- Exercise 2 page 42
 lemma unique_inverse  (f : A ≅ B) (f' : A ≅ B) (g k : B ⟶ A) :
     f.hom = f'.hom -> f.inv = g → f'.inv = k → g = k :=
@@ -413,9 +419,3 @@ begin
     -- but it doesn't work, in a weird way
     sorry
 end
-
-lemma exercise_1R_p40 : is_iso(𝟙 A) := {inv := 𝟙 A}
-lemma exercise_1S_p40 (f : A ⟶ B) (g : B ⟶ A) (isof : is_iso f) (i : inv f = g) : is_iso g := {inv := f}
-lemma exercise_1T_p40 (f : A ⟶ B) (k : B ⟶ D) (isof : is_iso f) (isok : is_iso k) : is_iso (f ≫ k) := 
-{inv := inv k ≫ inv f}
-
