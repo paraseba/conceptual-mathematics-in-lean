@@ -427,6 +427,24 @@ begin
     exact ⟨ hom, inv, forward, back ⟩
 end
 
+-- Exercise 1a page 70
+example (A B C: Type) (f: A ⟶ B) (g: B ⟶ C) (a1 a2 : unit ⟶ A) :
+a1 ≫ f = a2 ≫ f → a1 ≫ f ≫ g = a2 ≫ f ≫ g :=
+begin
+    intros h ,
+    rw ← category.assoc,
+    rw h,
+    simp,
+end
+
+-- Exercise 2 page 71
+example (A B C: Type) (f: A ⟶ B) (g: B ⟶ C) (h: A ⟶ C) (hcomp: h = f ≫ g):
+∀ a : unit ⟶ A, ∃ b : unit ⟶ B, a ≫ f ≫ g = b ≫ g :=
+begin
+intros a,
+exact ⟨ a ≫ f, by simp ⟩
+end
+
 
 -------------------------------------------------------------------
 
