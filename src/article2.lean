@@ -2,8 +2,12 @@ import category_theory.category
 import category_theory.isomorphism
 import category_theory.types
 import data.fintype.basic
+import data.real.basic
+import magma
 
 open category_theory
+
+section exercises
 
 variables  {C: Type} [category C]
 variables (A B D A' B' D' : C)
@@ -267,9 +271,9 @@ end
 universes v u
 
 -- this is ugly, why do I need to define this?
-abbreviation from_hom {α β : Type u} (f : α ⟶ β) : α → β := f
+abbreviation from_hom {α β : Type} (f : α ⟶ β) : α → β := f
 
-lemma type_isos_are_injective {A B: Type u} (i: A ≅ B) :
+lemma type_isos_are_injective {A B: Type} (i: A ≅ B) :
 ∀ (a1 a2 : A), a1 ≠ a2 → i.hom a1 ≠ i.hom a2 :=
 begin
     intros a1 a2 ne h,
@@ -285,7 +289,7 @@ begin
     } 
 end
 
-lemma type_isos_are_surjective {A B: Type u} (i: A ≅ B) :
+lemma type_isos_are_surjective {A B: Type} (i: A ≅ B) :
 ∀ (b : B), ∃ (a : A), i.hom a = b :=
 begin
     intros b,
@@ -351,6 +355,78 @@ suffices cards : card People11 ≠ card bool,
 
 { change 3 ≠ 2, finish,}
 end
+
+
+-- Exercise 1 page 66
+example :
+ (λ x: ℝ, 2 * x) ∘ (λ x: ℝ, 1/2 * x) = id 
+ ∧
+ (λ x: ℝ, 1/2 * x) ∘ (λ x: ℝ, 2 * x) = id :=
+begin
+split,
+{ funext,
+  change 2 * (1/2 * x) = x,
+  ring},
+{
+  funext,
+  change 1/2 * (2 * x) = x,
+  ring}
+end
+
+-- Exercise 2 page 66
+
+inductive OddEven : Type
+| odd : OddEven
+| even : OddEven
+
+def add_odd_even : OddEven → OddEven → OddEven
+| OddEven.odd OddEven.odd := OddEven.even
+| OddEven.even OddEven.even := OddEven.even
+| OddEven.odd OddEven.even := OddEven.odd
+| OddEven.even OddEven.odd := OddEven.odd
+
+inductive PosNeg : Type
+| pos : PosNeg
+| neg : PosNeg
+
+def mul_pos_neg : PosNeg → PosNeg → PosNeg
+| PosNeg.pos PosNeg.pos := PosNeg.pos
+| PosNeg.neg PosNeg.neg := PosNeg.pos
+| PosNeg.pos PosNeg.neg := PosNeg.neg
+| PosNeg.neg PosNeg.pos := PosNeg.neg
+
+open magma
+
+def OddEvenMagma : magma := ⟨OddEven, add_odd_even⟩
+def PosNegMagma : magma := ⟨PosNeg, mul_pos_neg⟩
+
+def oddeven2posneg : OddEven -> PosNeg
+| OddEven.odd := PosNeg.neg
+| OddEven.even := PosNeg.pos
+
+def posneg2oddeven : PosNeg -> OddEven 
+| PosNeg.neg := OddEven.odd
+| PosNeg.pos := OddEven.even
+
+
+example : OddEvenMagma ≅ PosNegMagma :=
+begin
+    let hom : OddEvenMagma ⟶ PosNegMagma := {
+        to_fun := oddeven2posneg,
+        preserves :=  λ x y, by {cases x; cases y; refl}
+        },
+
+    let inv : PosNegMagma ⟶ OddEvenMagma := {
+        to_fun := posneg2oddeven,
+        preserves :=  λ x y, by {cases x; cases y; refl}
+        },
+
+    have forward : hom ≫ inv = 𝟙 OddEvenMagma, {apply magma_hom_ext, intros x, cases x; refl},
+    have back : inv ≫ hom = 𝟙 PosNegMagma, {apply magma_hom_ext, intros x, cases x; refl},
+
+    exact ⟨ hom, inv, forward, back ⟩
+end
+
 
 -------------------------------------------------------------------
 
@@ -419,3 +495,5 @@ begin
     -- but it doesn't work, in a weird way
     sorry
 end
+
+end exercises
