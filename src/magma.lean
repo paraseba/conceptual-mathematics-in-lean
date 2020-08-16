@@ -6,9 +6,12 @@ structure magma :=
 (carrier : Type)
 (mul : carrier -> carrier -> carrier)
 
+instance {m: magma}: has_mul m.carrier :=  ⟨ m.mul ⟩
+
+
 structure magma_hom (m1: magma) (m2: magma) :=
 (to_fun : m1.carrier → m2.carrier)
-(preserves : ∀ x y : m1.carrier, to_fun (m1.mul x y) = m2.mul (to_fun x) (to_fun y))
+(preserves : ∀ x y : m1.carrier, to_fun (x * y) = to_fun x * to_fun y)
 
 infixr ` m→ `:25 := magma_hom
 
@@ -40,10 +43,8 @@ def magma_hom_comp (f: m m→ n) (g: n m→ o) : m m→ o :=
   preserves := by {
       intros x y,
       simp,
-      -- ToDo why do I need this change?
-      change g.to_fun (f.to_fun (m.mul x y)) = o.mul (g.to_fun (f.to_fun x)) (g.to_fun (f.to_fun y)),
       rw f.preserves,
-      rw g.preserves,
+      rw g.preserves
   }
 } 
 
