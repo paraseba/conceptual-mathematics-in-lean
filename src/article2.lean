@@ -397,8 +397,11 @@ def mul_pos_neg : PosNeg → PosNeg → PosNeg
 
 open magma
 
-def OddEvenMagma : magma := ⟨OddEven, add_odd_even⟩
-def PosNegMagma : magma := ⟨PosNeg, mul_pos_neg⟩
+instance : magma OddEven := {mul := add_odd_even} 
+instance : magma PosNeg := {mul := mul_pos_neg} 
+
+def OddEvenMagma : Magma := ⟨OddEven⟩
+def PosNegMagma : Magma := ⟨PosNeg⟩
 
 def oddeven2posneg : OddEven -> PosNeg
 | OddEven.odd := PosNeg.neg
@@ -408,23 +411,18 @@ def posneg2oddeven : PosNeg -> OddEven
 | PosNeg.neg := OddEven.odd
 | PosNeg.pos := OddEven.even
 
+def oe2pn :  OddEvenMagma ⟶ PosNegMagma :=
+{ to_fun := oddeven2posneg,
+  preserves :=  λ x y, by {cases x; cases y; refl} }
+
+def pn2oe :  PosNegMagma ⟶ OddEvenMagma :=
+{ to_fun := posneg2oddeven,
+  preserves :=  λ x y, by {cases x; cases y; refl} }
 
 example : OddEvenMagma ≅ PosNegMagma :=
 begin
-    let hom : OddEvenMagma ⟶ PosNegMagma := {
-        to_fun := oddeven2posneg,
-        preserves :=  λ x y, by {cases x; cases y; refl}
-        },
-
-    let inv : PosNegMagma ⟶ OddEvenMagma := {
-        to_fun := posneg2oddeven,
-        preserves :=  λ x y, by {cases x; cases y; refl}
-        },
-
-    have forward : hom ≫ inv = 𝟙 OddEvenMagma, {apply magma_hom_ext, intros x, cases x; refl},
-    have back : inv ≫ hom = 𝟙 PosNegMagma, {apply magma_hom_ext, intros x, cases x; refl},
-
-    exact ⟨ hom, inv, forward, back ⟩
+    refine ⟨oe2pn, pn2oe, _, _ ⟩ ;
+    { apply magma_hom_ext, intros x, cases x; refl}
 end
 
 -- Exercise 1a page 70
