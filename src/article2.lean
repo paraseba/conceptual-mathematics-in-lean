@@ -53,8 +53,7 @@ begin
 end
 
 inductive Two : Type
-| one : Two
-| two : Two
+| one | two
 
 def swap : Two → Two
 | Two.one := Two.two
@@ -236,15 +235,11 @@ end
 
 @[derive decidable_eq]
 inductive People11 : Type
-|Fatima : People11
-|Omer : People11
-|Alysia : People11
+| Fatima | Omer | Alysia 
 
 @[derive decidable_eq]
 inductive Drinks11 : Type
-|Coffee : Drinks11
-|Tea : Drinks11
-|Cocoa : Drinks11
+| Coffee | Tea | Cocoa 
 
 -- Exercise 11a page 55
 example : People11 ≅ Drinks11 :=
@@ -376,8 +371,7 @@ end
 -- Exercise 2 page 66
 
 inductive OddEven : Type
-| odd : OddEven
-| even : OddEven
+| odd | even
 
 def add_odd_even : OddEven → OddEven → OddEven
 | OddEven.odd OddEven.odd := OddEven.even
@@ -386,8 +380,7 @@ def add_odd_even : OddEven → OddEven → OddEven
 | OddEven.even OddEven.odd := OddEven.odd
 
 inductive PosNeg : Type
-| pos : PosNeg
-| neg : PosNeg
+| pos | neg
 
 def mul_pos_neg : PosNeg → PosNeg → PosNeg
 | PosNeg.pos PosNeg.pos := PosNeg.pos
