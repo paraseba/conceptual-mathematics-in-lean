@@ -393,8 +393,8 @@ open magma
 instance : magma OddEven := {mul := add_odd_even} 
 instance : magma PosNeg := {mul := mul_pos_neg} 
 
-def OddEvenMagma : Magma := ⟨OddEven⟩
-def PosNegMagma : Magma := ⟨PosNeg⟩
+def OddEvenMagma : Magma := bundled.of OddEven
+def PosNegMagma : Magma := bundled.of PosNeg
 
 def oddeven2posneg : OddEven -> PosNeg
 | OddEven.odd := PosNeg.neg

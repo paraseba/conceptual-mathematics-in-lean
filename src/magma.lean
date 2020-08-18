@@ -3,19 +3,22 @@ import category_theory.concrete_category.bundled
 
 namespace magma
 
+universe u
+
+open category_theory
+
 class magma (carrier: Type*) extends has_mul carrier
 
-structure Magma :=
-(carrier : Type)
-(str: magma carrier . tactic.apply_instance)
+def Magma := bundled magma
 
-instance (m: Magma) :has_mul m.carrier := ⟨ m.str.mul ⟩ 
+instance mag_has_mul (m: Magma) : has_mul m.α := ⟨ m.str.mul ⟩ 
 
 
+section magma_homs 
 
 structure magma_hom (A: Magma) (B: Magma) :=
-(to_fun : A.carrier → B.carrier)
-(preserves : ∀ x y : A.carrier, to_fun (x * y) = to_fun x * to_fun y)
+(to_fun : A.α → B.α)
+(preserves : ∀ x y : A.α, to_fun (x * y) = to_fun x * to_fun y)
 
 infixr ` m→ `:25 := magma_hom
 
@@ -26,9 +29,9 @@ instance : has_coe_to_fun (A m→ B) := ⟨_, magma_hom.to_fun⟩
 lemma to_fun_eq_coe (f : A m→ B) : f.to_fun = f := rfl
 
 @[simp]
-lemma coe_mk (f : A.carrier → B.carrier) (pre) : ⇑(magma_hom.mk f pre) = f := rfl
+lemma coe_mk (f : A.α → B.α) (pre) : ⇑(magma_hom.mk f pre) = f := rfl
 
-lemma coe_inj ⦃f g : A m→ B⦄ (h : (f : A.carrier → B.carrier) = g) : f = g :=
+lemma coe_inj ⦃f g : A m→ B⦄ (h : (f : A.α → B.α) = g) : f = g :=
 begin
     cases f; cases g; cases h; refl,
 end
@@ -51,18 +54,15 @@ def magma_hom_comp (f: A m→ B) (g: B m→ C) : A m→ C :=
   }
 } 
 
-open category_theory
+end magma_homs 
 
-instance : has_hom Magma := 
-begin
-split,
-intros m n,
-exact magma_hom m n
-end
+instance : has_hom Magma := ⟨λ m n, m m→ n⟩
 
+instance : category_struct Magma :=
+⟨@magma_id, @magma_hom_comp⟩
 
-instance : category_struct Magma := ⟨ @magma_id, @magma_hom_comp ⟩
-
-instance : category Magma := {}
+-- see here for explanation of the universe parameter
+--  https://leanprover.zulipchat.com/#narrow/stream/113489-new-members/topic/Why.20can't.20infer.20instance
+instance : category Magma.{u} := {}
 
 end magma
