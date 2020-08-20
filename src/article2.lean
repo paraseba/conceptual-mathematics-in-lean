@@ -358,13 +358,9 @@ example :
  ∧
  (λ x: ℝ, 1/2 * x) ∘ (λ x: ℝ, 2 * x) = id :=
 begin
-split,
+split;
 { funext,
-  change 2 * (1/2 * x) = x,
-  ring},
-{
-  funext,
-  change 1/2 * (2 * x) = x,
+  simp,
   ring}
 end
 
@@ -416,6 +412,46 @@ example : OddEvenMagma ≅ PosNegMagma :=
 begin
     refine ⟨oe2pn, pn2oe, _, _ ⟩ ;
     { apply magma_hom_ext, intros x, cases x; refl}
+end
+
+-- Exercise 3 page 70
+
+instance r_plus_magma_alpha_has_neg : has_neg r_plus_Magma.α :=  {
+    neg := by {
+        intros x,
+        have isR : r_plus_Magma.α = ℝ, refl,
+        rw isR at *,
+        exact -x,
+    }
+}
+
+def rplus_negate : r_plus_Magma ⟶ r_plus_Magma :=
+{to_fun := has_neg.neg,
+ preserves := by {
+    intros x y,
+    have isR : r_plus_Magma.α = ℝ, refl,
+    rw isR at *,
+    have isP : r_plus_Magma.str.mul = real.has_add.add, refl,
+    rw isP,
+    norm_num,
+    rw add_comm,
+ }
+}
+
+lemma rplus_negate_iso : rplus_negate ≫ rplus_negate = 𝟙 r_plus_Magma :=
+begin
+unfold rplus_negate,
+unfold category_struct.comp,
+unfold magma_hom_comp,
+unfold category_struct.id,
+unfold magma_id,
+simp,
+apply magma_hom_ext,
+intros x,
+have isR : r_plus_Magma.α = ℝ, refl,
+rw isR at *,
+simp,
+rw neg_neg,
 end
 
 -- Exercise 1a page 70
