@@ -440,11 +440,7 @@ def rplus_negate : r_plus_Magma ⟶ r_plus_Magma :=
 
 lemma rplus_negate_iso : rplus_negate ≫ rplus_negate = 𝟙 r_plus_Magma :=
 begin
-unfold rplus_negate,
-unfold category_struct.comp,
-unfold magma_hom_comp,
-unfold category_struct.id,
-unfold magma_id,
+unfold rplus_negate category_struct.comp magma_hom_comp category_struct.id magma_id,
 simp,
 apply magma_hom_ext,
 intros x,
