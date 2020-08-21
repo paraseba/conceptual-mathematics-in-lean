@@ -9,7 +9,7 @@ open category_theory
 
 section exercises
 
-variables  {C: Type} [category C]
+variables  {C: Type*} [category C]
 variables (A B D A' B' D' : C)
 
 -- Exercise 1 page 40
@@ -497,6 +497,33 @@ split,
         ... = q ≫ p ≫ q ≫ p ≫ q : by rw h
         ... = q ≫ (p ≫ q ≫ p) ≫ q : by simp
         ... = q ≫ p ≫ q : by rw h
+end
+
+-- Exercise 1* page 108
+def inclusionNZ : ℕ ⟶ ℤ := λ n:ℕ, int.of_nat n
+def retractionZN : ℤ ⟶ ℕ := λ i:ℤ, int.to_nat i
+
+example : is_retraction inclusionNZ retractionZN :=
+begin
+unfold is_retraction,
+unfold inclusionNZ,
+unfold retractionZN,
+funext,
+simp
+end
+
+
+example (f : ℤ ⟶ ℕ): ¬ is_retraction f inclusionNZ :=
+begin
+unfold is_retraction,
+intros h,
+rewrite [types_id, types_comp] at h,
+have neg : id (-5 : ℤ) < 0 , by norm_num,
+have isnat : f (-5) >= 0, by {apply zero_le},
+have pos : (inclusionNZ ∘ f) (-5) >= 0, by simp [isnat],
+
+rw h at pos,
+linarith,
 end
 
 
