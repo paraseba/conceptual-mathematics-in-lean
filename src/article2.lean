@@ -468,6 +468,37 @@ intros a,
 exact ⟨ a ≫ f, by simp ⟩
 end
 
+-- Exercise 2 page 108
+example  (p : A ⟶ B) (q : B ⟶ A) (h: p ≫ q ≫ p = p) : idempotent (p ≫ q) :=
+begin
+split,
+calc (p ≫ q) ≫ p ≫ q = (p ≫ q ≫ p) ≫ q : by simp
+    ... = p ≫ q : by rw h
+end
+
+example  (p : A ⟶ B) (q : B ⟶ A) (h: p ≫ q ≫ p = p) : idempotent (q ≫ p) :=
+begin
+split,
+calc (q ≫ p) ≫ q ≫ p = q ≫ (p ≫ q ≫ p) : by simp
+    ... = q ≫ p : by rw h
+end
+
+-- Exercise 2* page 108
+example  (p : A ⟶ B) (q : B ⟶ A) (h: p ≫ q ≫ p = p) :
+∃ (q' : B ⟶ A), (p ≫ q' ≫ p = p)  ∧  (q' ≫ p ≫ q' = q') :=
+begin
+use q ≫ p ≫ q,
+split,
+
+    calc p ≫ (q ≫ p ≫ q) ≫ p = (p ≫ q ≫ p) ≫ q ≫ p : by simp
+        ... = p : by rw [h, h],
+
+    calc (q ≫ p ≫ q) ≫ p ≫ q ≫ p ≫ q = q ≫ (p ≫ q ≫ p) ≫ q ≫ p ≫ q : by simp
+        ... = q ≫ p ≫ q ≫ p ≫ q : by rw h
+        ... = q ≫ (p ≫ q ≫ p) ≫ q : by simp
+        ... = q ≫ p ≫ q : by rw h
+end
+
 
 -------------------------------------------------------------------
 
