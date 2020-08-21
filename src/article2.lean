@@ -468,6 +468,20 @@ intros a,
 exact ⟨ a ≫ f, by simp ⟩
 end
 
+def aba (A : Type u) (B : Type u) : Prop := nonempty (A ⟶ B)
+def has_point (A : Type u) : Prop := nonempty (unit → A)
+
+local infix <| := aba
+
+-- Exercise 1 page 99
+example {A : Type*} {B : Type*}  (h: ¬ (has_point A ∧  ¬ has_point B)) : A <| B :=
+begin
+push_neg at h,
+by_cases has:has_point A,
+    exact ⟨ λ _, (h has).some unit.star ⟩,
+    exact ⟨ λ a, false.elim (has ⟨λ _, a⟩) ⟩
+end
+
 -- Exercise 2 page 108
 example  (p : A ⟶ B) (q : B ⟶ A) (h: p ≫ q ≫ p = p) : idempotent (p ≫ q) :=
 begin
