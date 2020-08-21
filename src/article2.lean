@@ -482,6 +482,27 @@ by_cases has:has_point A,
     exact ⟨ λ a, false.elim (has ⟨λ _, a⟩) ⟩
 end
 
+def retractable (A : C) (B : C) := ∃ (s : A ⟶ B) (r : B ⟶ A), s ≫ r = 𝟙 A
+
+infix ` ≤R `:50 := retractable
+
+
+-- Exercise 2R page 100
+example : A ≤R A := ⟨ 𝟙 A, 𝟙 A, category.id_comp _⟩
+
+-- Exercise 2T page 100
+example : A ≤R B → B ≤R D → A ≤R D :=
+begin
+intros ab bd,
+rcases ab with ⟨abs, abr, hab⟩,
+rcases bd with ⟨bds, bdr, hbd⟩,
+use abs ≫ bds,
+use bdr ≫ abr,
+calc (abs ≫ bds) ≫ bdr ≫ abr = abs ≫ (bds ≫ bdr) ≫ abr : by simp
+... = 𝟙 A : by simp [hab, hbd],
+end
+
+
 -- Exercise 2 page 108
 example  (p : A ⟶ B) (q : B ⟶ A) (h: p ≫ q ≫ p = p) : idempotent (p ≫ q) :=
 begin
