@@ -502,6 +502,52 @@ calc (abs ≫ bds) ≫ bdr ≫ abr = abs ≫ (bds ≫ bdr) ≫ abr : by simp
 ... = 𝟙 A : by simp [hab, hbd],
 end
 
+def splitting {B: C} (A : C) (e : B ⟶ B) [idempotent e] :=
+∃ (s : A ⟶ B), ∃ (r : B ⟶ A), is_retraction s r ∧ r ≫ s = e
+
+def are_iso (A : C) (B: C) : Prop := ∃ (f : A ⟶ B), nonempty (is_iso f)
+
+-- Exercise 3 page 102
+lemma two_splittings_iso {A A': C} (e : B ⟶ B) [idempotent e]
+(sp: splitting A e) (sp': splitting A' e) : are_iso A A' :=
+begin
+rcases sp with ⟨ s,r,ret ⟩,
+rcases sp' with ⟨ s',r',ret' ⟩,
+unfold is_retraction at *,
+
+let f := s ≫ e ≫ r',
+let f' := s' ≫ e ≫ r,
+
+have id1 : f ≫ f' = 𝟙 A, 
+    {
+        calc f ≫ f' = s ≫ e ≫ (r' ≫ s') ≫ e ≫ r : by simp
+        ... = s ≫ e ≫ e ≫ e ≫ r : by rw ret'.2
+        ... = s ≫ (e ≫ e) ≫ e ≫ r : by simp
+        ... = s ≫ e ≫ e ≫ r : by simp [idempotent.repeat]
+        ... = s ≫ (e ≫ e) ≫ r : by simp
+        ... = s ≫ e ≫ r : by rw idempotent.repeat
+        ... = s ≫ r ≫ s ≫ r : by {rw ← ret.2, simp}
+        ... = 𝟙 A : by simp [ret.1]
+    },
+
+have id2 : f' ≫ f = 𝟙 A',
+    {
+        calc f' ≫ f = s' ≫ e ≫ r ≫ s ≫ e ≫ r' : by simp
+        ... = s' ≫ e ≫ (r ≫ s) ≫ e ≫ r' : by simp
+        ... = s' ≫ e ≫ e ≫ e ≫ r' : by rw ret.2
+        ... = s' ≫ (e ≫ e) ≫ e ≫ r' : by simp
+        ... = s' ≫ e ≫ e ≫ r' : by rw idempotent.repeat
+        ... = s' ≫ (e ≫ e) ≫ r' : by simp
+        ... = s' ≫ e ≫ r' : by rw idempotent.repeat
+        ... = s' ≫ r' ≫ s' ≫ r' : by {rw ← ret'.2, simp}
+        ... = 𝟙 A' : by simp [ret'.1]
+    },
+
+exact let iso : is_iso f := ⟨ f', id1, id2 ⟩,
+          n   : nonempty (is_iso f) := ⟨ iso ⟩
+in ⟨f, n ⟩ 
+end
+
 
 -- Exercise 2 page 108
 example  (p : A ⟶ B) (q : B ⟶ A) (h: p ≫ q ≫ p = p) : idempotent (p ≫ q) :=
@@ -559,75 +605,6 @@ have pos : (inclusionNZ ∘ f) (-5) >= 0, by simp [isnat],
 
 rw h at pos,
 linarith,
-end
-
-
--------------------------------------------------------------------
-
-lemma isos_prop_1  (f : A ⟶ B ) (sec: ∃ s, s ≫ f = 𝟙 B): 
-∀ (T : C) (y : T ⟶ B), ∃ (x : T ⟶ A), x ≫ f = y :=
-begin
-    intros T  y,
-    cases sec with s hS,
-    let x := y ≫ s,
-    use x,
-    calc x ≫ f = (y ≫ s) ≫ f : rfl
-    ... = y ≫ (s ≫ f) : by apply category.assoc
-    ... = y ≫ 𝟙 B : by rw hS
-    ... = y : by apply category.comp_id,
-end
-
-
-
-
-
-
-def splitting {A B : C} (e : B ⟶ B) (s : A ⟶ B) (r : B ⟶ A) [idempotent e] := 
-    s ≫ r = 𝟙 A ∧ r ≫ s = e
-
-lemma exercise_3_p102 (e : B ⟶ B) [idempotent e] (s : A ⟶ B) (r : B ⟶ A) (s' : A' ⟶ B) (r' : B ⟶ A') (rsS: splitting e s r) (rsS': splitting e s' r') :
-A ≅ A' :=
-begin
-let f := s ≫ e ≫ r',
-let f' := s' ≫ e ≫ r,
-have id1 : f ≫ f' = 𝟙 A, 
-    {
-        calc f ≫ f' = s ≫ e ≫ r' ≫ s' ≫ e ≫ r : by simp
-        ... = s ≫ e ≫ (r' ≫ s') ≫ e ≫ r : by simp
-        ... = s ≫ e ≫ e ≫ e ≫ r : by rw rsS'.2
-        ... = s ≫ (e ≫ e) ≫ e ≫ r : by simp
-        ... = s ≫ e ≫ e ≫ r : by rw idempotent.repeat
-        ... = s ≫ (e ≫ e) ≫ r : by simp
-        ... = s ≫ e ≫ r : by rw idempotent.repeat
-        ... = s ≫ r ≫ s ≫ r : by {rw ← rsS.2, simp}
-        ... = 𝟙 A : by {rw rsS.1, simp, rw rsS.1}
-    },
-
-have id2 : f' ≫ f = 𝟙 A',
-    {
-        calc f' ≫ f = s' ≫ e ≫ r ≫ s ≫ e ≫ r' : by simp
-        ... = s' ≫ e ≫ (r ≫ s) ≫ e ≫ r' : by simp
-        ... = s' ≫ e ≫ e ≫ e ≫ r' : by rw rsS.2
-        ... = s' ≫ (e ≫ e) ≫ e ≫ r' : by simp
-        ... = s' ≫ e ≫ e ≫ r' : by rw idempotent.repeat
-        ... = s' ≫ (e ≫ e) ≫ r' : by simp
-        ... = s' ≫ e ≫ r' : by rw idempotent.repeat
-        ... = s' ≫ r' ≫ s' ≫ r' : by {rw ← rsS'.2, simp}
-        ... = 𝟙 A' : by {rw rsS'.1, simp, rw rsS'.1}
-    },
-
-exact ⟨ f, f', id1, id2 ⟩, 
-end
-
--- ToDo for some reason if I do split, everything is trivial and I don't have to prove they are inverses
-lemma exercise_3_p102_why (e : B ⟶ B) [idempotent e] (s : A ⟶ B) (r : B ⟶ A) (s' : A' ⟶ B) (r' : B ⟶ A') (rsS: splitting e s r) (rsS': splitting e s' r') :
-A ≅ A' :=
-begin
-    --split,
-    --exact s ≫ e ≫ r',
-    --exact s' ≫ e ≫ r,
-    -- but it doesn't work, in a weird way
-    sorry
 end
 
 end exercises
