@@ -199,13 +199,14 @@ has_retraction f := ⟨ r, ret ⟩
 
 
 -- Exercise 9a page 54
-lemma retraction_section_is_idemp {f : A ⟶ B} {r : B ⟶ A} (ret: is_retraction f r) : idempotent (r ≫ f) :=
+lemma retraction_section_is_idemp {f : A ⟶ B} {r : B ⟶ A} (ret: is_retraction f r)
+: idempotent (r ≫ f) :=
 begin
-    split, -- weird but this applies the constructor
+    split, -- this applies the constructor
     unfold is_retraction at ret, -- this is ugly, i shouldn't need it
 
     calc (r ≫ f) ≫ r ≫ f = r ≫ (f ≫ r) ≫ f : by {simp}
-    ... = r ≫ f : by {rw ret, simp}
+    ... = r ≫ f : by simp [ret]
 end
 
 open category_theory.iso
