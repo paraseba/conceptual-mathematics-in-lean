@@ -191,6 +191,7 @@ end
 class idempotent {X: C} (endo : X ⟶ X) : Prop :=
 (repeat : endo ≫ endo = endo)
 
+@[reducible]
 def is_retraction {A B : C} (f : A ⟶ B) (r : B ⟶ A) := f ≫ r = 𝟙 A
 
 lemma is_retraction_retracts (f : A ⟶ B) (r : B ⟶ A) (ret: is_retraction f r) :
@@ -502,50 +503,51 @@ calc (abs ≫ bds) ≫ bdr ≫ abr = abs ≫ (bds ≫ bdr) ≫ abr : by simp
 ... = 𝟙 A : by simp [hab, hbd],
 end
 
-def splitting {B: C} (A : C) (e : B ⟶ B) [idempotent e] :=
-∃ (s : A ⟶ B), ∃ (r : B ⟶ A), is_retraction s r ∧ r ≫ s = e
 
-def are_iso (A : C) (B: C) : Prop := ∃ (f : A ⟶ B), nonempty (is_iso f)
+structure splitting {B: C} (e : B ⟶ B) [idempotent e] :=
+(From: C)
+(s : From ⟶ B)
+(r : B ⟶ From)
+(ret: is_retraction s r)
+(is_idem: r ≫ s = e)
 
 -- Exercise 3 page 102
-lemma two_splittings_iso {A A': C} (e : B ⟶ B) [idempotent e]
-(sp: splitting A e) (sp': splitting A' e) : are_iso A A' :=
+lemma two_splittings_iso (e : B ⟶ B) [idempotent e]
+(sp: splitting e) (sp': splitting e) : sp.From ≅ sp'.From :=
 begin
-rcases sp with ⟨ s,r,ret ⟩,
-rcases sp' with ⟨ s',r',ret' ⟩,
-unfold is_retraction at *,
+rcases sp with  ⟨A,  s,  r,  ret,  is_idem ⟩,
+rcases sp' with ⟨A', s', r', ret', is_idem'⟩,
+unfold is_retraction at ret ret',
 
-let f := s ≫ e ≫ r',
-let f' := s' ≫ e ≫ r,
+let f  : A  ⟶ A' := s ≫ e ≫ r',
+let f' : A' ⟶ A := s' ≫ e ≫ r,
 
 have id1 : f ≫ f' = 𝟙 A, 
     {
         calc f ≫ f' = s ≫ e ≫ (r' ≫ s') ≫ e ≫ r : by simp
-        ... = s ≫ e ≫ e ≫ e ≫ r : by rw ret'.2
+        ... = s ≫ e ≫ e ≫ e ≫ r : by rw is_idem'
         ... = s ≫ (e ≫ e) ≫ e ≫ r : by simp
         ... = s ≫ e ≫ e ≫ r : by simp [idempotent.repeat]
         ... = s ≫ (e ≫ e) ≫ r : by simp
         ... = s ≫ e ≫ r : by rw idempotent.repeat
-        ... = s ≫ r ≫ s ≫ r : by {rw ← ret.2, simp}
-        ... = 𝟙 A : by simp [ret.1]
+        ... = s ≫ r ≫ s ≫ r : by {rw ← is_idem, simp}
+        ... = 𝟙 A : by simp [ret]
     },
 
 have id2 : f' ≫ f = 𝟙 A',
     {
         calc f' ≫ f = s' ≫ e ≫ r ≫ s ≫ e ≫ r' : by simp
         ... = s' ≫ e ≫ (r ≫ s) ≫ e ≫ r' : by simp
-        ... = s' ≫ e ≫ e ≫ e ≫ r' : by rw ret.2
+        ... = s' ≫ e ≫ e ≫ e ≫ r' : by rw is_idem
         ... = s' ≫ (e ≫ e) ≫ e ≫ r' : by simp
         ... = s' ≫ e ≫ e ≫ r' : by rw idempotent.repeat
         ... = s' ≫ (e ≫ e) ≫ r' : by simp
         ... = s' ≫ e ≫ r' : by rw idempotent.repeat
-        ... = s' ≫ r' ≫ s' ≫ r' : by {rw ← ret'.2, simp}
-        ... = 𝟙 A' : by simp [ret'.1]
+        ... = s' ≫ r' ≫ s' ≫ r' : by {rw ← is_idem', simp}
+        ... = 𝟙 A' : by simp [ret']
     },
 
-exact let iso : is_iso f := ⟨ f', id1, id2 ⟩,
-          n   : nonempty (is_iso f) := ⟨ iso ⟩
-in ⟨f, n ⟩ 
+exact ⟨f, f'⟩ 
 end
 
 
