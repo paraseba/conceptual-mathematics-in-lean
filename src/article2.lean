@@ -484,6 +484,13 @@ by_cases has:has_point A,
     exact ⟨ λ a, false.elim (has ⟨λ _, a⟩) ⟩
 end
 
+-- Exercise 1 page 99 (another approach)
+example(A B : Type*)[category Type*] (h: ¬(has_point A ∧ ¬ has_point B )) : A <| B:=
+begin
+    push_neg at h,
+    use  λ (a), (h(nonempty.intro (λ(x),a))).some unit.star,
+end
+
 def retractable (A : C) (B : C) := ∃ (s : A ⟶ B) (r : B ⟶ A), s ≫ r = 𝟙 A
 
 infix ` ≤R `:50 := retractable
