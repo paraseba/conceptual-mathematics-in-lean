@@ -13,8 +13,11 @@ variables  {C: Type*} [category C]
 variables (A B D A' B' D' : C)
 
 -- Exercise 1 page 40
-example : is_iso(𝟙 A) := {inv := 𝟙 A}
+-- the inverse of identity is itself
+example : is_iso(𝟙 A) := { inv := 𝟙 A}
+-- given two morphisms, if f is isomorphic and has a reverse g, then g is iso and has reverse f
 example (f : A ⟶ B) (g : B ⟶ A) (isof : is_iso f) (i : inv f = g) : is_iso g := {inv := f}
+-- composition of isomorphisms are isomorphisms 
 example (f : A ⟶ B) (k : B ⟶ D) (isof : is_iso f) (isok : is_iso k) : is_iso (f ≫ k) := 
 {inv := inv k ≫ inv f}
 
@@ -31,6 +34,26 @@ begin
     ... = f'.inv : by simp
     ... = k : by {rw f'inv},
 end
+
+lemma unique_inverse2 (g k: B ⟶ A)(f: A ⟶ B) (h1: f ≫ g = 𝟙 A)(h1a: g ≫ f = 𝟙 B)(h2: f ≫ k = 𝟙 A): g = k :=
+begin
+    calc g = g ≫ 𝟙 A : by rw [category.comp_id]
+    ... = g ≫ (f ≫ k) : by rw ← h2
+    ... = (g ≫ f) ≫ k : by rw [category.assoc]
+    ... = k : by rw [h1a, category.id_comp]
+end
+
+lemma unique_inverse3 (g k: B ⟶ A)(f: A ⟶ B) [is_iso f] (h1: inv f = g)(h2: inv f = k): g = k := 
+begin
+    calc g = g ≫ 𝟙 A : by rw category.comp_id
+    ... = g ≫ (f ≫ inv f) : by rw is_iso.hom_inv_id
+    ... = g ≫ (f ≫ k) : by rw h2
+    ... = (g ≫ f) ≫ k : by rw category.assoc
+    ... = (inv f ≫ f) ≫ k : by rw h1
+    ... = (𝟙 B) ≫ k : by rw is_iso.inv_hom_id
+    ... = k : by rw category.id_comp,
+end
+
 
 -- Exercise 3a page 43
 lemma iso_cancel_left  (f : A ≅ B) (h k : D ⟶ A) :
