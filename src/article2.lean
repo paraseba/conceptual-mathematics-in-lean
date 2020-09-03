@@ -35,24 +35,27 @@ begin
     ... = k : by {rw f'inv},
 end
 
-lemma unique_inverse2 (g k: B ⟶ A)(f: A ⟶ B) (h1: f ≫ g = 𝟙 A)(h1a: g ≫ f = 𝟙 B)(h2: f ≫ k = 𝟙 A): g = k :=
-begin
-    calc g = g ≫ 𝟙 A : by rw [category.comp_id]
-    ... = g ≫ (f ≫ k) : by rw ← h2
-    ... = (g ≫ f) ≫ k : by rw [category.assoc]
-    ... = k : by rw [h1a, category.id_comp]
-end
+section alternative_unique_inverse
 
-lemma unique_inverse3 (g k: B ⟶ A)(f: A ⟶ B) [is_iso f] (h1: inv f = g)(h2: inv f = k): g = k := 
-begin
-    calc g = g ≫ 𝟙 A : by rw category.comp_id
-    ... = g ≫ (f ≫ inv f) : by rw is_iso.hom_inv_id
-    ... = g ≫ (f ≫ k) : by rw h2
-    ... = (g ≫ f) ≫ k : by rw category.assoc
-    ... = (inv f ≫ f) ≫ k : by rw h1
-    ... = (𝟙 B) ≫ k : by rw is_iso.inv_hom_id
-    ... = k : by rw category.id_comp,
-end
+    lemma unique_inverse2 (g k: B ⟶ A)(f: A ⟶ B) (h1: f ≫ g = 𝟙 A)(h1a: g ≫ f = 𝟙 B)(h2: f ≫ k = 𝟙 A): g = k :=
+    begin
+        calc g = g ≫ 𝟙 A : by rw [category.comp_id]
+        ... = g ≫ (f ≫ k) : by rw ← h2
+        ... = (g ≫ f) ≫ k : by rw [category.assoc]
+        ... = k : by rw [h1a, category.id_comp]
+    end
+
+    lemma unique_inverse3 (g k: B ⟶ A)(f: A ⟶ B) [is_iso f] (h1: inv f = g)(h2: inv f = k): g = k := 
+    begin
+        calc g = g ≫ 𝟙 A : by rw category.comp_id
+        ... = g ≫ (f ≫ inv f) : by rw is_iso.hom_inv_id
+        ... = g ≫ (f ≫ k) : by rw h2
+        ... = (g ≫ f) ≫ k : by rw category.assoc
+        ... = (inv f ≫ f) ≫ k : by rw h1
+        ... = (𝟙 B) ≫ k : by rw is_iso.inv_hom_id
+        ... = k : by rw category.id_comp,
+    end
+end alternative_unique_inverse
 
 
 -- Exercise 3a page 43
@@ -64,6 +67,22 @@ begin
     ... = (k ≫ f.hom) ≫ f.inv : by {rw fhfk}
     ... = k : by {simp}
 end
+
+section alternative_ex3_page43
+    lemma iso_cancel_left2 (f: A ⟶ B) [is_iso f](h k: D ⟶ A): h ≫ f = k ≫ f → h = k := 
+    begin
+        let g: B ⟶ A := is_iso.inv f,
+        intros given,
+        /- given : h ≫ f = k ≫ f -/
+        calc h = h ≫ 𝟙 A : by rw category.comp_id
+        ... = h ≫ (f ≫ g) : by rw is_iso.hom_inv_id
+        ... = (h ≫ f) ≫ g: by rw category.assoc
+        ... = (k ≫ f) ≫ g: by rw given
+        ... = k ≫ (f ≫ g): by rw category.assoc
+        ... = k ≫ 𝟙 A : by rw is_iso.hom_inv_id
+        ... = k : by rw category.comp_id
+    end
+end alternative_ex3_page43
 
 -- Exercise 3b page 43
 lemma iso_cancel_right (f : A ≅ B) (h k : B ⟶ D) :
