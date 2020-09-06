@@ -10,7 +10,7 @@ open category_theory
 section exercises
 
 variables  {C: Type*} [category C]
-variables (A B D A' B' D' : C)
+variables (A B D A' B' D' X T : C)
 
 -- Exercise 1 page 40
 -- the inverse of identity is itself
@@ -658,5 +658,51 @@ have pos : (inclusionNZ ∘ f) (-5) >= 0, by simp [isnat],
 rw h at pos,
 linarith,
 end
+
+-- Exercise 2 page 126
+lemma fp_of_retraction_fp
+    {T : C} {s : A ⟶ X} {r : X ⟶ A} (ret : is_retraction s r)
+    (h : ∀ (f : X ⟶ X), ∃ (x : T ⟶ X), x ≫ f = x) :
+    ∀ (g : A ⟶ A), ∃ (x : T ⟶ A), x ≫ g = x :=
+begin
+    intros g,
+    cases h (r ≫ g ≫ s) with x hx,
+    use x ≫ r,
+    unfold is_retraction at ret,
+    calc (x ≫ r) ≫ g = x ≫ r ≫ g ≫ 𝟙 A : by {simp}
+        ... = x ≫ r ≫ g ≫ (s ≫ r) : by {rw ret,}
+        ... = (x ≫ r ≫ g ≫ s) ≫ r : by simp
+        ... = x ≫ r : by rw hx,
+end
+
+-- Exercise 3 page 126
+namespace ex3_page126
+section wrap
+
+parameters (CC : Type*) [category CC]
+parameters (Circle Disk Term : CC)
+
+parameter antipodal : (Circle ⟶ Circle)
+parameter j : (Circle ⟶ Disk)
+-- Notice, no axioms on j, so it's arbitrary, not a real inclusion
+
+
+-- axioms
+lemma antipodal_no_fp : ¬ ∃ (x : Term ⟶ Circle), x ≫ antipodal = x  := sorry
+lemma has_fp : ∀ (f : Disk ⟶ Disk), ∃ (x : Term ⟶ Disk), x ≫ f = x  := sorry
+
+
+include Term
+include antipodal
+example : ¬ ∃ (r : Disk ⟶ Circle), is_retraction j r :=
+begin
+    by_contradiction contra, 
+    cases contra with r ret,
+    have exist_fp := fp_of_retraction_fp Circle Disk ret (has_fp CC Disk Term) antipodal,
+    have not_exist_fp := antipodal_no_fp CC Circle Term antipodal,
+    exact not_exist_fp exist_fp,
+end
+end wrap
+end ex3_page126
 
 end exercises

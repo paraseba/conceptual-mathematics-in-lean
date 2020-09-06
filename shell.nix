@@ -11,8 +11,8 @@ let mathlib = import (builtins.fetchTarball {url = "https://github.com/leanprove
             {
               name = "lean";
               publisher = "jroesch";
-              version = "0.16.12";
-              sha256 = "1d88mz7msw23s0ggn829p8n3p0riwap07dk4hj31k38mv0h90rpc";
+              version = "0.16.13";
+              sha256 = "0f31kchj427jlrc7rhvvypsn6mixm7pf18xx215zqp2s82nnvcny";
             }
           ] ;
     };
