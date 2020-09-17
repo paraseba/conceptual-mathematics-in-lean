@@ -7,7 +7,7 @@ import magma
 
 open category_theory
 
-section exercises
+namespace exercises
 
 variables  {C: Type*} [category C]
 variables (A B D A' B' D' X T : C)
@@ -430,8 +430,8 @@ def mul_pos_neg : PosNeg → PosNeg → PosNeg
 
 open magma
 
-instance : magma OddEven := {mul := add_odd_even} 
-instance : magma PosNeg := {mul := mul_pos_neg} 
+instance magma_oddeven: magma OddEven := {mul := add_odd_even} 
+instance magma_posneg: magma PosNeg := {mul := mul_pos_neg} 
 
 def OddEvenMagma : Magma := bundled.of OddEven
 def PosNegMagma : Magma := bundled.of PosNeg
