@@ -1,7 +1,8 @@
 import category_theory.category
 import category_theory.isomorphism
+import category_theory.types
+import category_theory.isomorphism
 import .article2
---import category_theory.types
 
 
 namespace exercises
@@ -64,7 +65,65 @@ example {X: α} (endo r : X ⟶ X) (idem : idempotent endo) (ret : is_retraction
         ... = endo ≫ r : by rw idempotent.repeat
         ... = 𝟙 X : ret
 
--- Exercise 3 page 140
+def involution {A : α} (f : A ⟶ A) := f ≫ f = 𝟙 A 
+
+-- Exercise 4 page 140
+def minus : endomap Type*  := {
+    carrier := ℤ, 
+    endo := λ x, -x
+}
+
+example  : @involution Type*  infer_instance ℤ (λ x:ℤ, -x) :=
+begin
+    unfold involution,
+    ext,
+    simp,
+end
+
+-- Exercise 5 page 140
+example  : @idempotent Type*  infer_instance ℤ (λ x:ℤ, abs x) := {
+    repeat := by {
+        simp,
+        ext,
+        rw ← abs_abs,
+        simp,
+    }
+}
+
+-- Exercise 6 page 140
+example  : @is_iso Type* infer_instance ℤ ℤ  (λ x:ℤ, x + 3) := {
+    inv := λ x, x - 3,
+}
+
+lemma prod_ne_one_of_gr {a b: ℤ} (h: b > 1) : a * b ≠ 1 :=
+begin
+    intros prod,
+    have h := int.eq_one_of_mul_eq_one_left (by linarith) prod,
+    linarith,
+end
+
+-- Exercise 7 page 140
+example (iso: @is_iso Type* infer_instance ℤ ℤ  (λ x:ℤ, x * 5)) : false :=
+begin
+    have : iso.inv ≫ (λ x:ℤ, x * 5) = 𝟙 ℤ := @is_iso.inv_hom_id Type* infer_instance ℤ ℤ  (λ x:ℤ, x * 5) iso,
+    have h := congr_fun this 1,
+    simp at h,
+    exact prod_ne_one_of_gr (by linarith) h ,
+end
+
+-- Exercise 8 page 140
+example (A : α)  (f : A ⟶ A) (inv: involution f) : f ≫ f ≫ f = f :=
+begin
+    unfold involution at inv,
+    rw inv,
+    exact category.comp_id _,
+end
+
+example (A : α)  (f : A ⟶ A) [ide: idempotent f] : f ≫ f ≫ f = f :=
+begin
+    rw ide.repeat,
+    rw ide.repeat,
+end
 
 
 end exercises
