@@ -2,6 +2,9 @@ import category_theory.category
 import category_theory.isomorphism
 import category_theory.types
 import category_theory.isomorphism
+import data.finset.basic
+import data.finset.sort
+import data.int.parity
 import .article2
 
 
@@ -35,17 +38,11 @@ def endomap_maps_comp {A B C: endomap α} (f : endomaps_map A B) (g : endomaps_m
 variables {A B : endomap α}
 
 @[simp]
-lemma coe_mk (f : endomaps_map A  B) (pre) : (endomaps_map.mk f.map pre) = f := by {sorry}
-
-lemma coe_inj ⦃f g : endomaps_map A B⦄ (h : (f : endomaps_map A B) = g) : f = g :=
+lemma endo_inj (f : endomaps_map A  B) (pre) : (endomaps_map.mk f.map pre) = f :=
 begin
-    cases f, cases g,
-    exact h,
+    cases f,
+    refl,
 end
-
---@[ext]
---lemma endo_hom_ext ⦃f g : endomaps_map A B⦄ (h : ∀ x, f x = g x) : f = g :=
-    --coe_inj _ _ (funext h)
 
 instance endo_category : category (endomap α) :=
 {
@@ -64,6 +61,17 @@ example {X: α} (endo r : X ⟶ X) (idem : idempotent endo) (ret : is_retraction
         ... = (endo ≫ endo) ≫ r : by simp
         ... = endo ≫ r : by rw idempotent.repeat
         ... = 𝟙 X : ret
+
+
+
+
+-- Exercise 3 page 140
+lemma even_iff_inv_no_fp [decidable_eq α] (s : finset α) :
+    (∃ f: α → α,  (∀ a ∈ s, f a ∈ s ∧ f (f a) = a) ∧ (¬ ∃ a ∈ s, f a = a) ) ↔ nat.even(finset.card s) :=
+begin
+    sorry
+end
+
 
 def involution {A : α} (f : A ⟶ A) := f ≫ f = 𝟙 A 
 
