@@ -37,8 +37,10 @@ def endomap_maps_comp {A B C: endomap α} (f : endomaps_map A B) (g : endomaps_m
 
 variables {A B : endomap α}
 
+
 @[simp]
-lemma endo_inj (f : endomaps_map A  B) (pre) : (endomaps_map.mk f.map pre) = f :=
+lemma endo_inj (f : endomaps_map A  B) (pre) :
+    (endomaps_map.mk f.map pre) = f :=
 begin
     cases f,
     refl,
@@ -46,13 +48,31 @@ end
 
 instance endo_category : category (endomap α) :=
 {
-    hom := λ f g, endomaps_map f g,
-    id := λ x, ⟨ 𝟙 x.carrier, by simp ⟩, 
+    hom := λ x y, endomaps_map x y,
+    id := λ x, { map := 𝟙 x.carrier, preserve := by simp }, 
     comp := λ _ _ _ f g, endomap_maps_comp f g,
-    id_comp' := λ _ _ f, by {simp at *,unfold endomap_maps_comp,simp},
-    comp_id' := λ _ _ f, by {simp at *,unfold endomap_maps_comp,simp},
+    id_comp' := λ _ _ f, by {simp at *, unfold endomap_maps_comp, simp},
+    comp_id' := λ _ _ f, by {simp at *, unfold endomap_maps_comp, simp},
     assoc'   := λ _ _ _ _ f g h, by {simp, unfold endomap_maps_comp, simp}
 }
+
+def Endoset := @endomap Type* category_theory.types
+
+def category_of_endosets := category Endoset
+
+def x : Endoset := ⟨ ℕ, λ n, n + 2 ⟩
+def y : Endoset := ⟨ ℕ, λ n, n + 1 ⟩
+
+def yx : endomaps_map y x := {
+     map := λ n:ℕ,  nat.mul n 2,
+     preserve := by {
+         ext a,
+         change nat.mul (a + 1) 2 = (a * 2) + 2,
+         simp,
+         ring,
+     }
+}
+
 
 -- Exercise 2 page 139
 example {X: α} (endo r : X ⟶ X) (idem : idempotent endo) (ret : is_retraction endo r) : endo = 𝟙 X :=
@@ -61,16 +81,6 @@ example {X: α} (endo r : X ⟶ X) (idem : idempotent endo) (ret : is_retraction
         ... = (endo ≫ endo) ≫ r : by simp
         ... = endo ≫ r : by rw idempotent.repeat
         ... = 𝟙 X : ret
-
-
-
-
--- Exercise 3 page 140
-lemma even_iff_inv_no_fp [decidable_eq α] (s : finset α) :
-    (∃ f: α → α,  (∀ a ∈ s, f a ∈ s ∧ f (f a) = a) ∧ (¬ ∃ a ∈ s, f a = a) ) ↔ nat.even(finset.card s) :=
-begin
-    sorry
-end
 
 
 def involution {A : α} (f : A ⟶ A) := f ≫ f = 𝟙 A 
