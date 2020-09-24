@@ -12,6 +12,8 @@ namespace exercises
 
 universe u
 
+section endomaps
+
 open category_theory
 
 variables {α β: Type*}
@@ -35,6 +37,7 @@ def endomap_maps_comp {A B C: endomap α} (f : endomaps_map A B) (g : endomaps_m
             ... = (f.map ≫ g.map) ≫ C.endo : by simp,
 }
 
+
 variables {A B : endomap α}
 
 
@@ -57,6 +60,7 @@ instance endo_category : category (endomap α) :=
 }
 
 def Endoset := @endomap Type* category_theory.types
+def Endoset_map (dom: Endoset) (ima: Endoset):= endomaps_map dom ima
 
 def category_of_endosets := category Endoset
 
@@ -143,5 +147,148 @@ begin
     rw ide.repeat,
 end
 
+end endomaps
+
+section irr_graphs
+
+variables {α β δ γ ε ζ : Type u}
+
+structure irr_graph (α : Type u) (β : Type u) :=
+(s t : α → β)
+
+structure irr_graph_map (dom : irr_graph α β) (ima : irr_graph δ γ) :=
+(fa  : α → δ)
+(fd : β → γ)
+(pres: fd ∘ dom.s = ima.s ∘ fa)
+(pret: fd ∘ dom.t = ima.t ∘ fa)
+
+variables {A : irr_graph α β} {B : irr_graph δ γ} {C : irr_graph ε ζ}
+
+
+-- Exercise 11 page 142
+def irr_graph_map_comp (f : irr_graph_map A B) (g : irr_graph_map B C) : irr_graph_map A C :=
+{
+    fa := g.fa ∘ f.fa,
+    fd := g.fd ∘ f.fd,
+    pres :=
+        calc (g.fd ∘ f.fd) ∘ A.s = g.fd ∘ (f.fd ∘ A.s) : by simp
+             ... = g.fd ∘ (B.s ∘ f.fa) : by rw f.pres
+             ... = (g.fd ∘ B.s) ∘ f.fa : by simp
+             ... = (C.s ∘ g.fa) ∘ f.fa : by rw g.pres,
+
+    pret := by {
+        calc (g.fd ∘ f.fd) ∘ A.t = g.fd ∘ (f.fd ∘ A.t) : by simp
+             ... = g.fd ∘ (B.t ∘ f.fa) : by rw f.pret
+             ... = (g.fd ∘ B.t) ∘ f.fa : by simp
+             ... = (C.t ∘ g.fa) ∘ f.fa : by rw g.pret,
+    },
+}
+
+def endo_to_irr_graph_on_obj (e: Endoset) : irr_graph e.carrier e.carrier := 
+{
+    s := id,
+    t := e.endo
+}
+
+def endo_to_irr_graph_on_maps {A B : Endoset} (f: Endoset_map A B) :
+    irr_graph_map (endo_to_irr_graph_on_obj A) (endo_to_irr_graph_on_obj B) :=
+{
+    fa := f.map,
+    fd := f.map,
+    pres := by {
+        unfold endo_to_irr_graph_on_obj,
+        simp,
+    },
+    pret := by {
+        exact f.preserve,
+    }
+}
+
+-- Exercise 12 page 143
+lemma endo_insertion_functorial {A B C : Endoset} (f: Endoset_map A B) (g: Endoset_map B C) :
+    endo_to_irr_graph_on_maps( endomap_maps_comp f g ) = irr_graph_map_comp (endo_to_irr_graph_on_maps f) (endo_to_irr_graph_on_maps g) :=
+begin
+    refl
+end
+
+-- Exercise 13 page 144
+example {A B : Endoset} (f : irr_graph_map (endo_to_irr_graph_on_obj A) (endo_to_irr_graph_on_obj B) ) :
+    ∃ g : Endoset_map A B, endo_to_irr_graph_on_maps g = f :=
+begin
+    have : f.fd = f.fa := f.pres,
+
+    use f.fa,
+    {
+        have pret := f.pret,
+        rw this at pret,
+        exact pret,
+    },
+    {
+        cases f,
+        unfold endo_to_irr_graph_on_maps,
+        simp,
+        exact this.symm,
+    }
+end
+
+end irr_graphs
+
+
+section ref_graphs
+
+variables {α β δ γ ε ζ : Type u}
+
+structure ref_graph (α : Type u) (β : Type u) extends irr_graph α β  :=
+(i : β → α)
+(rets: s ∘ i = id)
+(rett: t ∘ i = id)
+
+
+structure ref_graph_map (dom : ref_graph α β) (ima : ref_graph δ γ)
+    extends irr_graph_map dom.to_irr_graph ima.to_irr_graph :=
+(prei: fa ∘ dom.i = ima.i ∘ fd)
+
+variables {A : ref_graph α β} {B : ref_graph δ γ} {C : ref_graph ε ζ}
+
+
+def ref_graph_map_comp (f : ref_graph_map A B) (g : ref_graph_map B C) : ref_graph_map A C :=
+{
+    prei := by {
+        simp,
+            calc (g.fa ∘ f.fa) ∘ A.i = g.fa ∘ (f.fa ∘ A.i) : by simp
+                ... = g.fa ∘ B.i ∘ f.fd : by rw f.prei
+                ... = (g.fa ∘ B.i) ∘ f.fd : by simp 
+                ... = (C.i ∘ g.fd) ∘ f.fd : by rw g.prei 
+                ... = C.i ∘ (g.fd ∘ f.fd) : by simp,
+
+        },
+
+    ..irr_graph_map_comp f.to_irr_graph_map g.to_irr_graph_map,
+}
+
+-- Exercise 15 page 145
+example : (A.i ∘ A.s) ∘ (A.i ∘ A.s) = A.i ∘ A.s :=
+calc (A.i ∘ A.s) ∘ (A.i ∘ A.s) = A.i ∘ (A.s ∘ A.i) ∘ A.s : by simp
+    ... = A.i ∘ A.s : by simp[A.rets]
+
+example : (A.i ∘ A.t) ∘ (A.i ∘ A.t) = A.i ∘ A.t :=
+calc (A.i ∘ A.t) ∘ (A.i ∘ A.t) = A.i ∘ (A.t ∘ A.i) ∘ A.t : by simp
+    ... = A.i ∘ A.t : by simp[A.rett]
+
+example : (A.i ∘ A.t) ∘ (A.i ∘ A.s) = A.i ∘ A.s :=
+calc (A.i ∘ A.t) ∘ (A.i ∘ A.s) = A.i ∘ (A.t ∘ A.i) ∘ A.s : by simp
+    ... = A.i ∘ A.s : by simp[A.rett] 
+
+example : (A.i ∘ A.s) ∘ (A.i ∘ A.t) = A.i ∘ A.t :=
+calc (A.i ∘ A.s) ∘ (A.i ∘ A.t) = A.i ∘ (A.s ∘ A.i) ∘ A.t : by simp
+    ... = A.i ∘ A.t : by simp [A.rets]
+
+-- Exercise 16 page 145
+example (f : ref_graph_map A B) : f.fd = B.s ∘ f.fa ∘ A.i :=
+calc f.fd = (B.s ∘ B.i) ∘ f.fd : by simp [B.rets]
+     ... = B.s ∘ (B.i ∘ f.fd) : by simp
+     ... = B.s ∘ f.fa ∘ A.i : by rw f.prei
+
+end ref_graphs
 
 end exercises
