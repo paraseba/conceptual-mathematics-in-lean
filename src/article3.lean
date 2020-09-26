@@ -234,6 +234,81 @@ end
 end irr_graphs
 
 
+section simpler
+
+open category_theory
+
+variables {α β: Type*}
+variables [category α]
+
+structure simpler (α : Type*) [category α] :=
+(dom : α)
+(ima : α)
+(map : dom ⟶ ima)
+
+structure simpler_map (dom: simpler α) (ima: simpler α) :=
+(dommap : dom.dom ⟶ ima.dom)
+(imamap : dom.ima ⟶ ima.ima)
+(preserve : dom.map ≫ imamap = dommap ≫ ima.map)
+
+variables {A B : simpler α}
+
+
+@[simp]
+lemma simpler_inj (f : simpler_map A  B) (pre) :
+    (simpler_map.mk f.dommap f.imamap pre) = f :=
+begin
+    cases f,
+    refl,
+end
+
+def simpler_maps_comp {A B C: simpler α} (f : simpler_map A B) (g : simpler_map B C) :
+simpler_map A C :=
+{
+    dommap := f.dommap ≫ g.dommap,
+    imamap := f.imamap ≫ g.imamap,
+    preserve :=
+       calc A.map ≫ f.imamap ≫ g.imamap
+            = (f.dommap ≫ B.map) ≫ g.imamap : by rw [← category.assoc, f.preserve]
+        ... = f.dommap ≫ B.map ≫ g.imamap : by  rw [category.assoc]
+        ... = f.dommap ≫ g.dommap ≫ C.map : by rw [← g.preserve]
+        ... = (f.dommap ≫ g.dommap) ≫ C.map : by rw [← category.assoc],
+}
+
+instance simpler_category : category (simpler α) :=
+{
+    hom := λ x y, simpler_map x y,
+    id := λ x, { dommap := 𝟙 x.dom, imamap := 𝟙 x.ima,  preserve := by simp },
+    comp := λ _ _ _ f g, simpler_maps_comp f g,
+    id_comp' := λ _ _ f, by {simp at *, unfold simpler_maps_comp, simp},
+    comp_id' := λ _ _ f, by {simp at *, unfold simpler_maps_comp, simp},
+    assoc'   := λ _ _ _ _ f g h, by {simp, unfold simpler_maps_comp, simp}
+}
+
+def simpler_set := @simpler Type* category_theory.types
+def simpler_set_map (dom: simpler_set) (ima: simpler_set):= simpler_map dom ima
+
+def SimplerSetCategory := category simpler_set
+
+def AddOne : simpler_set := ⟨ ℕ, ℕ, λ n, n + 1 ⟩
+def AddTwo : simpler_set := ⟨ ℕ, ℕ, λ n, n + 2 ⟩
+
+def AddOneToAddTwo : simpler_map AddOne AddTwo := {
+     dommap := λ n:ℕ, nat.add n  1,
+     imamap := λ n:ℕ, nat.add n  2,
+     preserve := by {
+         ext a,
+         change nat.add (a + 1) 2 = (a + 2) + 1,
+         simp,
+     }
+}
+
+-- Exercise 14 page 144
+-- Use AddOneToAddTwo
+
+
+end simpler
+
 section ref_graphs
 
 variables {α β δ γ ε ζ : Type u}
