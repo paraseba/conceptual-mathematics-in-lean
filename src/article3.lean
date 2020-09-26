@@ -290,10 +290,25 @@ def simpler_set_map (dom: simpler_set) (ima: simpler_set):= simpler_map dom ima
 
 def SimplerSetCategory := category simpler_set
 
+def endo_inclusion_on_objs (e : endomap α) : simpler α := ⟨ e.carrier, e.carrier, e.endo ⟩
+def endo_inclusion_on_maps {A B : endomap α } (f : endomaps_map A B) :
+    simpler_map (endo_inclusion_on_objs A) (endo_inclusion_on_objs B) :=
+{
+    dommap := f.map,
+    imamap := f.map,
+    preserve := f.preserve
+}
+
+-- Exercise 14 page 144
+
 def AddOne : simpler_set := ⟨ ℕ, ℕ, λ n, n + 1 ⟩
 def AddTwo : simpler_set := ⟨ ℕ, ℕ, λ n, n + 2 ⟩
 
-def AddOneToAddTwo : simpler_map AddOne AddTwo := {
+def AddOneEndo : Endoset := ⟨ ℕ, λ n, n + 1 ⟩
+def AddTwoEndo : Endoset := ⟨ ℕ, λ n, n + 2 ⟩
+
+
+def AddOneToAddTwo : simpler_map (endo_inclusion_on_objs AddOneEndo) (endo_inclusion_on_objs AddTwoEndo) := {
      dommap := λ n:ℕ, nat.add n  1,
      imamap := λ n:ℕ, nat.add n  2,
      preserve := by {
@@ -303,8 +318,18 @@ def AddOneToAddTwo : simpler_map AddOne AddTwo := {
      }
 }
 
--- Exercise 14 page 144
--- Use AddOneToAddTwo
+example : ¬ ∃ f, endo_inclusion_on_maps f = AddOneToAddTwo :=
+begin
+    intros h,
+    rcases h with ⟨ f, h⟩ ,
+    unfold endo_inclusion_on_maps at h,
+    unfold AddOneToAddTwo at h,
+    simp at *,
+    cases h,
+    rw h_left at h_right,
+    have := congr_fun h_right 0,
+    exact (nat.succ_ne_self 1) this.symm,
+end
 
 
 end simpler
