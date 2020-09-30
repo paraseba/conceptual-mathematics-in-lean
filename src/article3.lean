@@ -49,7 +49,7 @@ begin
     refl,
 end
 
-instance endo_category : category (endomap α) :=
+def endo_category : category (endomap α) :=
 {
     hom := λ x y, endomaps_map x y,
     id := λ x, { map := 𝟙 x.carrier, preserve := by simp }, 
@@ -62,7 +62,7 @@ instance endo_category : category (endomap α) :=
 def Endoset := @endomap Type* category_theory.types
 def Endoset_map (dom: Endoset) (ima: Endoset):= endomaps_map dom ima
 
-def category_of_endosets := category Endoset
+def endoset_category : category Endoset := endo_category
 
 def x : Endoset := ⟨ ℕ, λ n, n + 2 ⟩
 def y : Endoset := ⟨ ℕ, λ n, n + 1 ⟩
@@ -390,5 +390,310 @@ calc f.fd = (B.s ∘ B.i) ∘ f.fd : by simp [B.rets]
      ... = B.s ∘ f.fa ∘ A.i : by rw f.prei
 
 end ref_graphs
+
+open category_theory
+variables {C : Type*}
+variables [category C]
+variables {A B T : C}
+
+def injective (a : A ⟶ B) := ∀ (T : C) (x1 x2 : T ⟶ A), x1 ≫ a = x2 ≫ a → x1 = x2
+
+-- Exercise 18 page 146
+theorem injective_of_retraction {a : A ⟶ B} {p : B ⟶ A} (ret: is_retraction a p) :
+    injective a :=
+begin
+    intros T x1 x2 h,
+    unfold is_retraction at ret,
+    calc x1 = x1 ≫ 𝟙 A : by simp
+        ... = x1 ≫ a ≫ p : by rw ret
+        ... = (x1 ≫ a) ≫ p : by simp
+        ... = x2 ≫ a ≫ p : by {rw h, simp}
+        ... = x2 : by {simp [ret]}
+end
+
+section endo_example
+
+open category_theory
+
+inductive Xs : Type
+| x | z
+
+inductive Ys : Type
+| ybar | y | z
+
+def alpha : Xs → Xs
+| Xs.x := Xs.z
+| Xs.z := Xs.z
+
+def beta  : Ys → Ys
+| Ys.ybar := Ys.y
+| Ys.y := Ys.z
+| Ys.z := Ys.z
+
+def as : Xs → Ys
+| Xs.x := Ys.y
+| Xs.z := Ys.z
+
+def X : Endoset := ⟨ Xs, alpha ⟩
+def Y : Endoset := ⟨ Ys, beta ⟩
+
+-- Exercise 19 page 147
+def a : Endoset_map X Y := ⟨ as, by {ext, cases x; refl} ⟩ 
+
+-- Exercise 20 page 147
+-- FixMe simplify proof
+example : @injective Endoset endo_category  X Y a :=
+begin
+    intros e x1 x2 h,
+    cases x1,
+    cases x2,
+    unfold a at h,
+    congr,
+    ext,
+    injections_and_clear,
+    dsimp at *,
+
+
+    have foo := congr_fun h_1 x,
+    simp at foo,
+    cases x1_map x,
+    {
+
+        cases x2_map x, refl, simp, unfold as at foo,
+        simp at foo,
+        exact foo,
+    },
+    {
+        cases x2_map x, simp, unfold as at foo,
+        simp at foo,
+        exact foo,
+        refl,
+    }
+end
+
+-- Exercise 21 page 147
+def as_ret1 : Ys → Xs
+| Ys.ybar := Xs.x
+| Ys.y := Xs.x
+| Ys.z := Xs.z
+
+def as_ret2 : Ys → Xs
+| Ys.ybar := Xs.z
+| Ys.y := Xs.x
+| Ys.z := Xs.z
+
+-- FixMe simplify proof
+example : ∀ (f : Ys → Xs), f ∘ as = id → f = as_ret1 ∨ f = as_ret2 :=
+begin
+    intros f h,
+    apply classical.or_iff_not_imp_left.mpr,
+    intros notret1,
+    ext,
+    have h1: f Ys.ybar ≠ as_ret1 Ys.ybar,
+    {
+        have a1 : f Ys.y = as_ret1 Ys.y, {change (f ∘ as) Xs.x = Xs.x, rw h, refl},
+        have a2 : f Ys.z = as_ret1 Ys.z, {change (f ∘ as) Xs.z = Xs.z, rw h, refl},
+        intros eq_ybar,
+        have  eq : f = as_ret1 , {ext, cases x_1; assumption},
+        exact notret1 eq,
+    },
+
+    cases x,
+    {
+        have  :f Ys.ybar = as_ret1 Ys.ybar ∨ f Ys.ybar = as_ret2 Ys.ybar,
+        {
+            change f Ys.ybar = Xs.x ∨ f Ys.ybar = Xs.z,
+            cases f Ys.ybar; simp
+        },
+
+        cases this,
+        exact false.elim (h1 this),
+        exact this,
+    },
+    {
+      change (f ∘ as) Xs.x = Xs.x,
+      rw h,
+      simp,
+    },
+    {
+      change (f ∘ as) Xs.z = Xs.z,
+      rw h,
+      simp,
+    }
+end
+
+-- Exercise 22 page 147
+example : as_ret1 ∘ beta ≠ alpha ∘ as_ret1 :=
+begin
+    intros h,
+    have := congr_fun h Ys.ybar,
+    injections,
+end
+
+example : as_ret2 ∘ beta ≠ alpha ∘ as_ret2 :=
+begin
+    intros h,
+    have := congr_fun h Ys.ybar,
+    injections,
+end
+
+-- Exercise 25 page 148
+example (α β δ γ : Type*) (A : irr_graph α β) (B : irr_graph δ γ) (f : irr_graph_map A B)
+    : f.fd ∘ A.s = f.fd ∘ A.t
+    → B.s ∘ f.fa = B.t ∘ f.fa :=
+begin
+    intros h,
+    rw ← f.pres,
+    rw h,
+    rw f.pret,
+end
+
+-- Exercise 26 page 148
+def zinc (n : ℤ) : ℚ := ↑ n
+
+def z5x_endo : Endoset := ⟨ ℤ, λ n, n * 5 ⟩
+def q5x_endo : Endoset := ⟨ ℚ, λ p, p * 5 ⟩
+
+-- part 1
+def zinc_endo_map : Endoset_map z5x_endo q5x_endo :=
+{
+    map := zinc,
+    preserve := by {
+        ext,
+        simp,
+        change zinc (x * 5) = (zinc x) * 5,
+        unfold zinc,
+        simp,
+    }
+}
+
+def x5 (p : ℚ) : ℚ := p * 5
+
+-- part 2
+example : ∃ (f : ℚ → ℚ), f ∘ x5 = id ∧ x5 ∘ f = id :=
+begin
+    use λ q, q / 5,
+    split;
+    {
+        ext, simp, unfold x5, ring,
+
+    }
+end
+
+
+lemma endomap_eq (α : Type*) [category α]  (A : endomap α ) (B : endomap α) (f : endomaps_map A B) (g :endomaps_map A B)  :
+  f.map = g.map → f = g :=
+begin
+    intros h,
+    cases f, cases g,
+    simp at *,
+    exact h,
+end
+
+-- part 3
+example : @injective Endoset endo_category  z5x_endo q5x_endo zinc_endo_map :=
+begin
+    intros e x1 x2 h,
+    unfold zinc_endo_map at h,
+    injections_and_clear,
+    simp at h_1,
+
+    change zinc ∘ x1.map = zinc ∘ x2.map at h_1,
+    
+    have caca : x1.map = x2.map, {
+        ext,
+        have foo := congr_fun h_1 x,
+        simp at foo,
+        unfold zinc at foo,
+        norm_cast at *,
+        exact foo,
+    },
+
+    apply endomap_eq,
+    exact caca,
+
+end
+
+-- Exercise 27 page 148
+inductive Set27 : Type
+| x | y
+
+def a27 : Set27 → Set27
+| Set27.x := Set27.y
+| Set27.y := Set27.y
+
+def X27 : Endoset := ⟨ Set27, a27 ⟩
+
+def invert_map : Endoset_map X27 X27 :=
+{
+    map := a27,
+    preserve := by {
+        ext,
+        cases x; refl,
+    }
+} 
+
+instance : category Endoset :=  endoset_category
+
+example (Y27 : Endoset) (auto : Y27.endo ≫ Y27.endo = 𝟙 Y27.carrier) (f: Endoset_map X27 Y27): 
+    ¬ @injective Endoset endoset_category X27 Y27 f :=
+begin
+    intros inj,
+    suffices h: f.map Set27.x = f.map Set27.y,
+    {
+
+        unfold injective at inj,
+        have := inj X27 (𝟙 X27) invert_map,
+        simp at this,
+
+
+        have foo := this (by {
+            apply endomap_eq,
+            ext,
+            cases x,
+            {
+                rw h,
+                refl,
+            },
+            {
+                refl,
+
+            }
+        }),
+        unfold invert_map at foo,
+
+        have caca := congr_arg (λ m:Endoset_map _ _, m.map) foo,
+        simp at caca,
+        have := congr_fun caca Set27.x,
+        change Set27.x = Set27.y at this,
+        simp at this_1,
+        exact this_1,
+    },
+    {
+        have  : Y27.endo (f.map Set27.x) = Y27.endo (f.map Set27.y) → f.map Set27.x = f.map Set27.y , {
+            -- automorph is injective
+            intros h,
+            have := congr_arg Y27.endo h,
+            have foo := congr_fun auto (f.map Set27.x),
+            simp at foo,
+            rw foo at this,
+            have foo := congr_fun auto (f.map Set27.y),
+            simp at foo,
+            rw foo at this,
+            exact this,
+        }, 
+        apply this,
+
+        have prex := congr_fun f.preserve Set27.x,
+        have prey := congr_fun f.preserve Set27.y,
+        simp at *,
+        rw ← prey,
+        rw ← prex,
+        refl,
+
+    }
+end
+
+end endo_example
 
 end exercises
